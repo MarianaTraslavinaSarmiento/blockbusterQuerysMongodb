@@ -2,33 +2,37 @@
 import {MongoClient} from 'mongodb';
 
 export class connect {
-    static instance;
+    static instanceConnect;
     user;
-    port;
+
     cluster;
     #host;
     #pass
     #dbName
-    constructor({host, user, pass, port,cluster, dbName}=
+    
+    constructor({host, user, pass, cluster, dbName}=
         {host: "mongodb://", 
             user: "mongo", 
-            pass: "PNSmQbwecKrbuFTCqXmYoaqicgEZpFeF", 
-            port: 47797, 
-            cluster: "monorail.proxy.rlwy.net", 
-            dbName: "test"}
+            pass: "MvwjZZrDvXeaTaXAaIVhZLYXQkahfinL", 
+            cluster: "monorail.proxy.rlwy.net:44048", 
+            dbName: "blockbuster"}
         ) {
-        if (typeof connect.instance === 'object') {
-            return connect.instance;
+        if (connect.instanceConnect) {
+            return connect.instanceConnect;
         }
+
         this.setHost = host;
         this.user = user;
         this.setPass = pass;
-        this.port = port;
+        // this.port = port;
         this.cluster = cluster;
         this.setDbName = dbName;
         this.#open()
-        connect.instance = this;
-        return this;
+        connect.instanceConnect = this;
+
+    }
+    destructor(){
+        connect.instanceConnect = undefined;
     }
     set setHost(host){
         this.#host = host;
@@ -42,14 +46,14 @@ export class connect {
     get getDbName(){
         return this.#dbName;
     }
-    async reConnect(){
-        await this.#open();
-    }
     async #open(){
-        //console.log("Entre");
+        // console.log("Entre");
         // mongodb://mongo:PNSmQbwecKrbuFTCqXmYoaqicgEZpFeF@monorail.proxy.rlwy.net:47797/
-        let url = `${this.#host}${this.user}:${this.#pass}@${this.cluster}:${this.port}`;
+        let url = `${this.#host}${this.user}:${this.#pass}@${this.cluster}`;
         this.conexion = new MongoClient(url);
-        //console.log("Mensaje de la conexion");     
+
+        // await this.conexion.connect();
+        // console.log("Mensaje de la conexion");     
     }
 }
+
