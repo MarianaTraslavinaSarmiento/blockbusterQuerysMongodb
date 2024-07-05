@@ -42,12 +42,14 @@ export class connect {
     get getDbName(){
         return this.#dbName;
     }
+    async reConnect(){
+        await this.#open();
+    }
     async #open(){
-        console.log("Entre");
+        //console.log("Entre");
         // mongodb://mongo:PNSmQbwecKrbuFTCqXmYoaqicgEZpFeF@monorail.proxy.rlwy.net:47797/
         let url = `${this.#host}${this.user}:${this.#pass}@${this.cluster}:${this.port}`;
         this.conexion = new MongoClient(url);
-        console.log("Mensaje de la conexion");
-        await this.conexion.connect()        
+        //console.log("Mensaje de la conexion");     
     }
 }
