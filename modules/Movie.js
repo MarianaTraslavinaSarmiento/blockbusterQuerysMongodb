@@ -174,14 +174,7 @@ export class Movie extends connect {
   async getAllSciFiMoviesWhereActorOnePerformed() {
     await this.conexion.connect();
     const data = await this.collection
-      .aggregate([
-        {
-          $match: {
-            $and: [{ genre: "Ciencia Ficción" }, { "character.id_actor": 3 }],
-          },
-        },
-      ])
-      .toArray();
+    .find({genre: "Ciencia Ficción", "character.id_actor": 3}).toArray();
 
     await this.conexion.close();
     return data;
