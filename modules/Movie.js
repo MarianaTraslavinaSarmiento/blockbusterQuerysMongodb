@@ -45,9 +45,9 @@ export class Movie extends connect {
 
   async getAllMoviesActorOnePerformed({ id } = { id: 1 }) {
     await this.conexion.connect();
-    const data = this.collection.find({"character.id_actor":id})
-    .project({"name":true})
-    .toArray();
+    const data = this.collection.find({ "character.id_actor": id })
+      .project({ "name": true })
+      .toArray();
     return data;
   }
 
@@ -98,8 +98,8 @@ export class Movie extends connect {
 
   async getAllMoviesWherePrincipalsPerformed({ rol } = { rol: "principal" }) {
     await this.conexion.connect();
-    const data = await this.collection.find({"character.rol": rol})
-    .toArray();
+    const data = await this.collection.find({ "character.rol": rol })
+      .toArray();
     await this.conexion.close();
     return data;
   }
@@ -174,7 +174,7 @@ export class Movie extends connect {
   async getAllSciFiMoviesWhereActorOnePerformed() {
     await this.conexion.connect();
     const data = await this.collection
-    .find({genre: "Ciencia Ficción", "character.id_actor": 3}).toArray();
+      .find({ genre: "Ciencia Ficción", "character.id_actor": 3 }).toArray();
 
     await this.conexion.close();
     return data;
@@ -207,34 +207,58 @@ export class Movie extends connect {
     return data;
   }
 
-  async getTotalValueOfBlurayMovies(){
+  async getTotalValueOfBlurayMovies() {
     await this.conexion.connect()
     const data = await this.collection.aggregate([
-        {
-          $unwind: "$format"
-        },
-        {
-          $match: {
-            "format.name":'Bluray'
-          }
-        },
-        {
-          $set: {
-            total_valor_copias: {$multiply: ["$format.value","$format.copies"]}
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            count: {
-              $sum: "$total_valor_copias"
-            }
+      {
+        $unwind: "$format"
+      },
+      {
+        $match: {
+          "format.name": 'Bluray'
+        }
+      },
+      {
+        $set: {
+          total_valor_copias: { $multiply: ["$format.value", "$format.copies"] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          count: {
+            $sum: "$total_valor_copias"
           }
         }
-      ]).toArray()
+      }
+    ]).toArray()
 
-      await this.conexion.close()
-      return data
+    await this.conexion.close()
+    return data
   }
+
+
+  async myTransaction() {
+
+    await this.conexion.connect()
+    const session = this.conexion.startSession()
+
+    try {
+      let config = {
+        readPreference: 'primary',
+        readConcern: { level: 'local' }, //Esta configurado en el servidor
+        writeConcern: { w: 'majority' }
+      }
+      await session.withTransaction(() => {},{session}, config)
+
+      await session.startTransaction()
+      await session.commitTransaction()
+    } catch (error) {
+      if (session.transaction.isActive) {
+        await session.abortTransaction()
+      }
+    }
+  }
+
 
 }
